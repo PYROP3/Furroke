@@ -11,7 +11,7 @@ if /i "%confirm%" == "n" goto end
 
 echo
 echo "*** CREATING PYTHON VIRTUAL ENVIRONMENT ***"
-python3 -m venv .venv
+python -m venv .venv
 call .venv\Scripts\activate
 
 echo
