@@ -7,5 +7,5 @@
 ## Creating a pi image in OSX
 
 - Determine the path of SD card `diskutil list`
-- Run dd, replacing the if param with the device path of the SD card `sudo dd bs=4m if=/dev/disk5 of=pikaraoke.img`
+- Run dd, replacing the if param with the device path of the SD card `sudo dd bs=4m if=/dev/disk5 of=patake.img`
 - Zip the image file, it should clock in under 1.5GB if all goes well

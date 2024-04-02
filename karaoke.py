@@ -62,7 +62,7 @@ class Karaoke:
         self,
         port=5555,
         ffmpeg_port=5556,
-        download_path="/usr/lib/pikaraoke/songs",
+        download_path="/usr/lib/patake/songs",
         hide_url=False,
         hide_raspiwifi_instructions=False,
         hide_splash_screen=False,
@@ -275,7 +275,7 @@ class Karaoke:
     def get_karaoke_search_results(self, songTitle):
         return self.get_search_results(songTitle + " karaoke")
 
-    def download_video(self, video_url, enqueue=False, user="Pikaraoke"):
+    def download_video(self, video_url, enqueue=False, user="Patake"):
         logging.info("Downloading video: " + video_url)
         dl_path = self.download_path + "%(title)s---%(id)s.%(ext)s"
         file_quality = (
@@ -488,7 +488,7 @@ class Karaoke:
                 return True
         return False
 
-    def enqueue(self, song_path, user="Pikaraoke", semitones=0, add_to_front=False):
+    def enqueue(self, song_path, user="Patake", semitones=0, add_to_front=False):
         if (self.is_song_in_queue(song_path)):
             logging.warn("Song is already in queue, will not add: " + song_path)   
             return False
@@ -637,7 +637,7 @@ class Karaoke:
         self.now_playing_transpose = 0
 
     def run(self):
-        logging.info("Starting PiKaraoke!")
+        logging.info("Starting Patakê!")
         logging.info(f"Connect the player host to: {self.url}/splash")
         self.running = True
         while self.running:
@@ -654,5 +654,5 @@ class Karaoke:
                         self.play_file(self.queue[0]["file"], self.queue[0]["semitones"])
                 self.handle_run_loop()
             except KeyboardInterrupt:
-                logging.warn("Keyboard interrupt: Exiting pikaraoke...")
+                logging.warn("Keyboard interrupt: Exiting patake...")
                 self.running = False
