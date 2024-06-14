@@ -119,7 +119,7 @@ msgstr "成功添加歌曲： "
 #. Notification when a song does not get added to the queue.  The song name
 #. comes after this string.
 #: templates/files.html:41
-msgid "Song already in the queue: "
+msgid "Você já tem uma música na fila!"
 msgstr "添加至播放列表： "
 
 #. Label which displays that the songs are currently sorted by alphabetical

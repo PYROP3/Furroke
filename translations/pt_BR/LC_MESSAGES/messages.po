@@ -121,8 +121,8 @@ msgstr "Música adicionada na fila: "
 #. Notification when a song does not get added to the queue.  The song name
 #. comes after this string.
 #: templates/files.html:41
-msgid "Song already in the queue: "
-msgstr "Música já está na fila: "
+msgid "Você já tem uma música na fila!"
+msgstr "Você já tem uma música na fila!"
 
 #. Label which displays that the songs are currently sorted by alphabetical
 #. order.
@@ -430,11 +430,11 @@ msgstr ""
 #, python-format
 msgid ""
 "\n"
-"    Enable admin mode: <a href=\"%(login_url)s\">Log in</a>\n"
+"    Enable admin mode: <a href=\%(login_url)s\>Log in</a>\n"
 "  "
 msgstr ""
 "\n"
-"    Habilitar modo admin: <a href=“%(login_url)s”>Logar</a>\n"
+"    Habilitar modo admin: <a href=%(login_url)s>Logar</a>\n"
 "  "
 
 #. Title for the log in page for admins.

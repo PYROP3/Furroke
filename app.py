@@ -219,6 +219,9 @@ def enqueue():
     else:
         d = request.form.to_dict()
         user = d["song-added-by"]
+    if not is_admin() and any([song["user"] == user for song in k.queue]):
+        flash("You already have a song in the queue!", "is-warning")
+        return json.dumps({"song": None, "success": False})
     rc = k.enqueue(song, user)
     song_title = filename_from_path(song)
     return json.dumps({"song": song_title, "success": rc })
@@ -763,7 +766,7 @@ if __name__ == "__main__":
         "--admin-password",
         help="Administrator password, for locking down certain features of the web UI such as queue editing, player controls, song editing, and system shutdown. If unspecified, everyone is an admin.",
         default=None,
-        required=False,
+        required=True,
     ),
 
     args = parser.parse_args()
