@@ -1,7 +1,7 @@
 @echo off
 
 :start
-echo Are you sure you want to setup Patakê? (y/n):
+echo Are you sure you want to setup Furroke? (y/n):
 set /p confirm=
 
 if /i "%confirm%" == "y" goto setup
@@ -20,7 +20,7 @@ pip install -r requirements.txt
 
 echo
 echo "*** DONE ***"
-echo "Run Patakê with: ./patake.bat <args>"
+echo "Run Furroke with: ./Furroke.bat <args>"
 echo
 
 :end

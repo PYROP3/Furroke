@@ -221,13 +221,13 @@ msgid "Are you sure you want to quit?"
 msgstr ""
 
 #. Confirmation text whe the user starts to turn off the machine running
-#. Patake.
+#. Furroke.
 #: templates/info.html:15
 msgid "Are you sure you want to shut down?"
 msgstr ""
 
 #. Confirmation text whe the user starts to reboot the machine running
-#. Patake.
+#. Furroke.
 #: templates/info.html:23
 msgid "Are you sure you want to reboot?"
 msgstr ""
@@ -261,24 +261,24 @@ msgstr ""
 msgid "Open splash screen"
 msgstr ""
 
-#. Header of the information section about the computer running Patake.
+#. Header of the information section about the computer running Furroke.
 #: templates/info.html:80
 msgid "System Info"
 msgstr ""
 
-#. The CPU usage of the computer running Patake.
+#. The CPU usage of the computer running Furroke.
 #: templates/info.html:83
 #, python-format
 msgid "CPU: %(cpu)s"
 msgstr ""
 
-#. The disk usage of the computer running Patake. Used by downloaded songs.
+#. The disk usage of the computer running Furroke. Used by downloaded songs.
 #: templates/info.html:85
 #, python-format
 msgid "Disk Usage: %(disk)s"
 msgstr ""
 
-#. The memory (RAM) usiage of the computer running Patake.
+#. The memory (RAM) usiage of the computer running Furroke.
 #: templates/info.html:87
 #, python-format
 msgid "Memory: %(memory)s"
@@ -290,10 +290,10 @@ msgstr ""
 msgid "Youtube-dl (yt-dlp) version: %(youtubedl_version)s"
 msgstr ""
 
-#. The version of Patake running right now.
+#. The version of Furroke running right now.
 #: templates/info.html:91
 #, python-format
-msgid "Patake version: %(pikaraoke_version)s"
+msgid "Furroke version: %(pikaraoke_version)s"
 msgstr ""
 
 #. Title of the updates section.
@@ -301,13 +301,13 @@ msgstr ""
 msgid "Updates"
 msgstr ""
 
-#. Label before a link which forces Patake to rescan and pick up any new
+#. Label before a link which forces Furroke to rescan and pick up any new
 #. songs.
 #: templates/info.html:100
 msgid "Refresh the song list:"
 msgstr ""
 
-#. Text on the link which forces Patake to rescan and pick up any new songs.
+#. Text on the link which forces Furroke to rescan and pick up any new songs.
 #: templates/info.html:105
 msgid "Rescan song directory"
 msgstr ""
@@ -316,7 +316,7 @@ msgstr ""
 #: templates/info.html:110
 msgid ""
 "You should only need to do this if you manually copied files to the "
-"download directory while patake was running."
+"download directory while Furroke was running."
 msgstr ""
 
 #. Text explaining why you might want to update youtube-dl.
@@ -329,22 +329,22 @@ msgid ""
 msgstr ""
 
 #. Text for the link which will try and update youtube-dl on the machine
-#. running Patake.
+#. running Furroke.
 #: templates/info.html:121
 msgid "Update youtube-dl"
 msgstr ""
 
 #. Help text which explains why updating youtube-dl can fail.  The log is a
-#. file on the machine running Patake.
+#. file on the machine running Furroke.
 #: templates/info.html:127
 msgid ""
 "This update link above may fail if you don't have proper file "
 "permissions.\n"
-"    Check the patake log for errors."
+"    Check the Furroke log for errors."
 msgstr ""
 
 #. Title of the section on shutting down / turning off the machine running
-#. Patake.
+#. Furroke.
 #: templates/info.html:134
 msgid "Shutdown"
 msgstr ""
@@ -356,18 +356,18 @@ msgid ""
 "data corruption."
 msgstr ""
 
-#. Text for button which turns off Patake for everyone using it at your
+#. Text for button which turns off Furroke for everyone using it at your
 #. house.
 #: templates/info.html:143
-msgid "Quit Patake"
+msgid "Quit Furroke"
 msgstr ""
 
-#. Text for button which reboots the machine running Patake.
+#. Text for button which reboots the machine running Furroke.
 #: templates/info.html:146
 msgid "Reboot System"
 msgstr ""
 
-#. Text for button which turn soff the machine running Patake.
+#. Text for button which turn soff the machine running Furroke.
 #: templates/info.html:149
 msgid "Shutdown System"
 msgstr ""
@@ -386,7 +386,7 @@ msgstr ""
 #. filesystem.
 #: templates/info.html:162
 msgid ""
-"If you just installed the pre-built patake pi image and your SD card "
+"If you just installed the pre-built Furroke pi image and your SD card "
 "is larger than 4GB,\n"
 "    you may want to expand the filesystem to utilize the remaining space."
 " You only need to do this once.\n"

@@ -16,9 +16,9 @@ class FileResolver:
     def __init__(self, file_path):
         # Determine tmp directories (for things like extracted cdg files)
         if get_platform() == "windows":
-            self.tmp_dir = os.path.expanduser(r"~\\AppData\\Local\\Temp\\patake\\" + str(self.pid) + r"\\")
+            self.tmp_dir = os.path.expanduser(r"~\\AppData\\Local\\Temp\\Furroke\\" + str(self.pid) + r"\\")
         else:
-            self.tmp_dir = f"/tmp/patake/{self.pid}"
+            self.tmp_dir = f"/tmp/Furroke/{self.pid}"
         self.resolved_file_path = self.process_file(file_path)
 
     # Extract zipped cdg + mp3 files into a temporary directory, and set the paths to both files.

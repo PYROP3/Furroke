@@ -42,7 +42,7 @@ app.secret_key = os.urandom(24)
 app.jinja_env.add_extension('jinja2.ext.i18n')
 app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations'
 babel = Babel(app)
-site_name = "Patakê"
+site_name = "Furroke"
 admin_password = None
 is_raspberry_pi = get_platform() == "raspberry_pi"
 
@@ -144,7 +144,7 @@ def nowplaying():
         rc["hash"] = hash_dict(rc) # used to detect changes in the now playing data
         return json.dumps(rc)
     except (Exception) as e:
-        logging.error("Problem loading /nowplaying, patake may still be starting up: " + str(e))
+        logging.error("Problem loading /nowplaying, Furroke may still be starting up: " + str(e))
         return ""
 
 # Call this after receiving a command in the front end
@@ -567,7 +567,7 @@ def refresh():
 @app.route("/quit")
 def quit():
     if (is_admin()):
-        flash("Quitting patake now!", "is-warning")
+        flash("Quitting Furroke now!", "is-warning")
         th = threading.Thread(target=delayed_halt, args=[0])
         th.start()
     else:
@@ -620,19 +620,19 @@ def get_default_youtube_dl_path(platform):
 
 def get_default_dl_dir(platform):
     if is_raspberry_pi:
-        return "~/patake-songs"
+        return "~/Furroke-songs"
     elif platform == "windows":
-        legacy_directory = os.path.expanduser("~\patake\songs")
+        legacy_directory = os.path.expanduser("~\Furroke\songs")
         if os.path.exists(legacy_directory):
             return legacy_directory
         else:
-            return "~\patake-songs"
+            return "~\Furroke-songs"
     else:
-        legacy_directory = "~/patake/songs"
+        legacy_directory = "~/Furroke/songs"
         if os.path.exists(legacy_directory):
             return legacy_directory
         else:
-            return "~/patake-songs"
+            return "~/Furroke-songs"
 
 
 if __name__ == "__main__":
@@ -741,7 +741,7 @@ if __name__ == "__main__":
         "--hide-splash-screen",
         "--headless",
         action="store_true",
-        help="Headless mode. Don't launch the splash screen/player on the patake server",
+        help="Headless mode. Don't launch the splash screen/player on the Furroke server",
         required=False,
     )
     parser.add_argument(
@@ -774,7 +774,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--hide-overlay",
         action="store_true",
-        help="Hide overlay that shows on top of video with patake QR code and IP",
+        help="Hide overlay that shows on top of video with Furroke QR code and IP",
         required=False,
     ),
     parser.add_argument(
@@ -865,7 +865,7 @@ if __name__ == "__main__":
         options.add_experimental_option("excludeSwitches", ['enable-automation'])
         driver = webdriver.Chrome(service=service, options=options)
         driver.get(f"{k.url}/splash" )
-        driver.add_cookie({'name': 'user', 'value': 'Patakê-Host'})
+        driver.add_cookie({'name': 'user', 'value': 'Furroke-Host'})
         # Clicking this counts as an interaction, which will allow the browser to autoplay audio
         wait = WebDriverWait(driver, 60)
         elem = wait.until(EC.element_to_be_clickable((By.ID, "permissions-button")))

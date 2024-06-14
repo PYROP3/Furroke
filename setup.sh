@@ -1,6 +1,6 @@
 #!/bin/bash
 
-read -p "Are you sure you want to setup Patake? (y/n): " REPLY
+read -p "Are you sure you want to setup Furroke? (y/n): " REPLY
 if [ $REPLY = "y" ]
  then
 
@@ -35,7 +35,7 @@ if [ $? -ne 0 ]; then echo "ERROR: Python requirements.txt installation failed w
 
 echo
 echo "*** DONE ***"
-echo "Run Patake with: ./patake.sh <args>"
+echo "Run Furroke with: ./Furroke.sh <args>"
 echo
 
 # end setup stuff
