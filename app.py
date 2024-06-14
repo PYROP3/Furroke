@@ -304,11 +304,8 @@ def browse():
     if q:
         search = True
     page = request.args.get(get_page_parameter(), type=int, default=1)
-
     available_songs = k.available_songs
-
     letter = request.args.get('letter')
-   
     if (letter):
         result = []
         if (letter == "numeric"):
@@ -322,7 +319,6 @@ def browse():
                 if (f.startswith(letter.lower())):
                     result.append(song)
         available_songs = result
-
     if "sort" in request.args and request.args["sort"] == "date":
         songs = sorted(available_songs, key=lambda x: os.path.getctime(x))
         songs.reverse()
@@ -330,7 +326,6 @@ def browse():
     else:
         songs = available_songs
         sort_order = "Alphabetical"
-    
     results_per_page = 500
     pagination = Pagination(css_framework='bulma', page=page, total=len(songs), search=search, record_name='songs', per_page=results_per_page)
     start_index = (page - 1) * (results_per_page - 1)
@@ -356,18 +351,15 @@ def download():
         queue = True
     else:
         queue = False
-
     # download in the background since this can take a few minutes
     t = threading.Thread(target=k.download_video, args=[song, queue, user])
     t.daemon = True
     t.start()
-
     flash_message = (
         "Download started: '"
         + song
         + "'. This may take a couple of minutes to complete. "
     )
-
     if queue:
         flash_message += "Song will be added to queue."
     else:
@@ -471,11 +463,7 @@ def splash():
 @app.route("/info")
 def info():
     url=k.url
-
-    # cpu
     cpu = str(psutil.cpu_percent()) + "%"
-
-    # mem
     memory = psutil.virtual_memory()
     available = round(memory.available / 1024.0 / 1024.0, 1)
     total = round(memory.total / 1024.0 / 1024.0, 1)
@@ -487,8 +475,6 @@ def info():
         + str(memory.percent)
         + "% )"
     )
-
-    # disk
     disk = psutil.disk_usage("/")
     # Divide from Bytes -> KB -> MB -> GB
     free = round(disk.free / 1024.0 / 1024.0 / 1024.0, 1)
@@ -501,10 +487,7 @@ def info():
         + str(disk.percent)
         + "% )"
     )
-
-    # youtube-dl
     youtubedl_version = k.youtubedl_version
-
     return render_template(
         "info.html",
         site_title=site_name,
@@ -636,7 +619,6 @@ def get_default_dl_dir(platform):
 
 
 if __name__ == "__main__":
-
     platform = get_platform()
     default_port = 5555
     default_ffmpeg_port = 5556

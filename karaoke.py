@@ -66,7 +66,7 @@ class Karaoke:
         hide_url=False,
         hide_raspiwifi_instructions=False,
         hide_splash_screen=False,
-        high_quality=False,
+        high_quality=True,
         volume=0.85,
         log_level=logging.DEBUG,
         splash_delay=2,
@@ -278,11 +278,7 @@ class Karaoke:
     def download_video(self, video_url, enqueue=False, user="Furroke"):
         logging.info("Downloading video: " + video_url)
         dl_path = self.download_path + "%(title)s---%(id)s.%(ext)s"
-        file_quality = (
-            "bestvideo[ext!=webm][height<=1080]+bestaudio[ext!=webm]/best[ext!=webm]"
-            if self.high_quality
-            else "mp4"
-        )
+        file_quality = "bestvideo[ext!=webm][height<=2160]+bestaudio[ext!=webm]/best[ext!=webm]"
         cmd = [self.youtubedl_path, "-f", file_quality, "-o", dl_path, video_url]
         logging.debug("Youtube-dl command: " + " ".join(cmd))
         rc = subprocess.call(cmd)
