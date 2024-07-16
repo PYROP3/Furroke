@@ -627,7 +627,7 @@ if __name__ == "__main__":
     default_ffmpeg_port = 5556
     default_volume = 0.85
     default_splash_delay = 3
-    default_screensaver_delay = 300
+    default_screensaver_delay = 120
     default_log_level = logging.INFO
     default_prefer_hostname = False
 

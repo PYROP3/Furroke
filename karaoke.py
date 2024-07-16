@@ -73,7 +73,7 @@ class Karaoke:
         youtubedl_path="/usr/local/bin/yt-dlp",
         logo_path=None,
         hide_overlay=False,
-        screensaver_timeout = 300,
+        screensaver_timeout = 120,
         url=None,
         ffmpeg_url=None,
         prefer_hostname=True
