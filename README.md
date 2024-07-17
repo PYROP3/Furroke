@@ -22,18 +22,17 @@ It connects to your TV, and shows a QR code for computers and smartphones to con
 ### TV
 
 <p float="left">
-  <img width="400" alt="Furroke-tv1" src="https://user-images.githubusercontent.com/4107190/95813571-06645600-0ccd-11eb-8341-021a20813990.png">
-<img width="400" alt="Furroke-tv2" src="https://user-images.githubusercontent.com/4107190/95813564-019fa200-0ccd-11eb-95e1-57a002c357a3.png">
+  <img width="400" alt="Furroke-tv1" src="screenshots/tv1.png">
+<img width="400" alt="Furroke-tv2" src="screenshots/tv2.png">
   </p>
 
 ### Web interface
 
 <div style="display: flex">
-<img width="250" alt="Furroke-nowplaying" src="https://user-images.githubusercontent.com/4107190/95813193-2cd5c180-0ccc-11eb-89f4-11a69676dc6f.png">
-<img width="250" alt="Furroke-queue" src="https://user-images.githubusercontent.com/4107190/95813195-2d6e5800-0ccc-11eb-8f00-1369350a8a1c.png">
-<img width="250"  alt="Furroke-browse" src="https://user-images.githubusercontent.com/4107190/95813182-27787700-0ccc-11eb-82c8-fde7f0a631c1.png">
-<img width="250"  alt="Furroke-search1" src="https://user-images.githubusercontent.com/4107190/95813197-2e06ee80-0ccc-11eb-9bf9-ddb24d988332.png">
-<img width="250"  alt="Furroke-search2" src="https://user-images.githubusercontent.com/4107190/95813190-2ba49480-0ccc-11eb-84e3-f902cbd489a2.png">
+<img width="250" alt="mobile1" src="screenshots/mobile1.jpg">
+<img width="250" alt="mobile2" src="screenshots/mobile2.jpg">
+<img width="250" alt="mobile3" src="screenshots/mobile3.jpg">
+<img width="250" alt="mobile4" src="screenshots/mobile4.jpg">
 </div>
 
 ## Supported Devices / OS
