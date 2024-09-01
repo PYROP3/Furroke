@@ -6,3 +6,5 @@ __pycache__/
 songs/
 qrcode.png
 .DS_Store
+*.ini
+*.pem

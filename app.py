@@ -1,5 +1,5 @@
 import argparse
-import datetime
+import functools
 import hashlib
 import json
 import logging
@@ -13,8 +13,9 @@ import time
 import cherrypy
 import flask_babel
 import psutil
+from enum import Enum
 from flask import (Flask, flash, make_response, redirect, render_template,
-                   request, send_file, url_for)
+                   request, send_file, url_for, session)
 from flask_babel import Babel
 from flask_paginate import Pagination, get_page_parameter
 from selenium import webdriver
@@ -58,7 +59,7 @@ def filename_from_path(file_path, remove_youtube_id=True):
     return rc
 
 def arg_path_parse(path):
-    if (type(path) == list):
+    if (type(path) is list):
         return " ".join(path)
     else:
         return path
@@ -70,13 +71,19 @@ def hash_dict(d):
     return hashlib.md5(json.dumps(d, sort_keys=True, ensure_ascii=True).encode('utf-8', "ignore")).hexdigest()
 
 def is_admin():
-    if (admin_password == None):
+    if (admin_password is None):
         return True
-    if ('admin' in request.cookies):
-        a = request.cookies.get("admin")
-        if (a == admin_password):
-            return True
-    return False
+    return session.get('admin_token') == admin_password
+
+def admin_only(endpoint):
+    @functools.wraps(endpoint)
+    def wrapper(msg=None):
+        if not is_admin(): 
+            logging.debug(f"Blocking endpoint {endpoint.__name__} from {request.access_route[-1]}")
+            flash(msg or "You don't have permission to access this endpoint", "is-danger")
+            return redirect(url_for("home"))
+        return endpoint()
+    return wrapper
 
 @babel.localeselector
 def get_locale():
@@ -95,13 +102,9 @@ def home():
 
 @app.route("/auth", methods=["POST"])
 def auth():
-    d = request.form.to_dict()
-    p = d["admin-password"]
-    if (p == admin_password):
+    if (request.form.get("admin-password") == admin_password):
         resp = make_response(redirect('/'))
-        expire_date = datetime.datetime.now()
-        expire_date = expire_date + datetime.timedelta(days=90)
-        resp.set_cookie('admin', admin_password, expires=expire_date)
+        session['admin_token'] = admin_password
         # MSG: Message shown after logging in as admin successfully
         flash(_("Admin mode granted!"), "is-success")
     else:
@@ -116,15 +119,14 @@ def login():
 
 @app.route("/logout")
 def logout():
-    resp = make_response(redirect('/'))
-    resp.set_cookie('admin', '')
+    session.pop('admin_token', None)
     flash("Logged out of admin mode!", "is-success")
-    return resp
+    return make_response(redirect('/'))
 
 @app.route("/nowplaying")
 def nowplaying():
     try: 
-        if len(k.queue) >= 1:
+        if k.queue:
             next_song = k.queue[0]["title"]
             next_user = k.queue[0]["user"]
         else:
@@ -161,22 +163,21 @@ def queue():
 
 @app.route("/get_queue")
 def get_queue():
-    if len(k.queue) >= 1:
-        return json.dumps(k.queue)
-    else:
-        return json.dumps([])
+    return json.dumps(k.queue)
 
 @app.route("/queue/addrandom", methods=["GET"])
+@admin_only
 def add_random():
     amount = int(request.args["amount"])
     rc = k.queue_add_random(amount)
     if rc:
-        flash("Added %s random tracks" % amount, "is-success")
+        flash(f"Added {amount} random tracks", "is-success")
     else:
         flash("Ran out of songs!", "is-warning")
     return redirect(url_for("queue"))
 
 @app.route("/queue/edit", methods=["GET"])
+@admin_only
 def queue_edit():
     action = request.args["action"]
     if action == "clear":
@@ -228,40 +229,47 @@ def enqueue():
 
 
 @app.route("/skip")
+@admin_only
 def skip():
     k.skip()
     return redirect(url_for("home"))
 
 
 @app.route("/pause")
+@admin_only
 def pause():
     k.pause()
     return redirect(url_for("home"))
 
 
 @app.route("/transpose/<semitones>", methods=["GET"])
+@admin_only
 def transpose(semitones):
     k.transpose_current(int(semitones))
     return redirect(url_for("home"))
 
 
 @app.route("/restart")
+@admin_only
 def restart():
     k.restart()
     return redirect(url_for("home"))
 
 @app.route("/volume/<volume>")
+@admin_only
 def volume(volume):
     k.volume_change(float(volume))
     return redirect(url_for("home"))
 
 @app.route("/vol_up")
+@admin_only
 def vol_up():
     k.vol_up()
     return redirect(url_for("home"))
 
 
 @app.route("/vol_down")
+@admin_only
 def vol_down():
     k.vol_down()
     return redirect(url_for("home"))
@@ -380,16 +388,20 @@ def logo():
     return send_file(k.logo_path, mimetype="image/png")
 
 @app.route("/end_song", methods=["GET"])
+@admin_only
 def end_song():
     k.end_song()
     return "ok"
 
 @app.route("/start_song", methods=["GET"])
+@admin_only
 def start_song():
     k.start_song()
     return "ok"
 
+# Shouldn't we use the DELETE method?
 @app.route("/files/delete", methods=["GET"])
+@admin_only
 def delete_file():
     if "song" in request.args:
         song_path = request.args["song"]
@@ -408,6 +420,7 @@ def delete_file():
 
 
 @app.route("/files/edit", methods=["GET", "POST"])
+@admin_only
 def edit_file():
     queue_error_msg = "Error: Can't edit this song because it is in the current queue: "
     if "song" in request.args:
@@ -438,14 +451,13 @@ def edit_file():
                     os.path.join(k.download_path, new_name + file_extension)
                 ):
                     flash(
-                        "Error Renaming file: '%s' to '%s'. Filename already exists."
-                        % (old_name, new_name + file_extension),
+                        f"Error Renaming file: '{old_name}' to '{new_name + file_extension}'. Filename already exists.",
                         "is-danger",
                     )
                 else:
                     k.rename(old_name, new_name)
                     flash(
-                        "Renamed file: '%s' to '%s'." % (old_name, new_name),
+                        f"Renamed file: '{old_name}' to '{new_name + file_extension}'.",
                         "is-warning",
                     )
         else:
@@ -464,32 +476,19 @@ def splash():
     )
 
 @app.route("/info")
+@admin_only # For security purposes only (prevent recon)
 def info():
     url=k.url
-    cpu = str(psutil.cpu_percent()) + "%"
+    cpu = f"{psutil.cpu_percent()}%"
     memory = psutil.virtual_memory()
     available = round(memory.available / 1024.0 / 1024.0, 1)
     total = round(memory.total / 1024.0 / 1024.0, 1)
-    memory = (
-        str(available)
-        + "MB free / "
-        + str(total)
-        + "MB total ( "
-        + str(memory.percent)
-        + "% )"
-    )
+    memory = f"{available}MB free / {total}MB total ( {memory.percent}% )"
     disk = psutil.disk_usage("/")
     # Divide from Bytes -> KB -> MB -> GB
     free = round(disk.free / 1024.0 / 1024.0 / 1024.0, 1)
     total = round(disk.total / 1024.0 / 1024.0 / 1024.0, 1)
-    disk = (
-        str(free)
-        + "GB free / "
-        + str(total)
-        + "GB total ( "
-        + str(disk.percent)
-        + "% )"
-    )
+    disk = f"{free}GB free / {total}GB total ( {disk.percent}% )"
     youtubedl_version = k.youtubedl_version
     return render_template(
         "info.html",
@@ -503,97 +502,84 @@ def info():
         is_pi=is_raspberry_pi,
         pikaraoke_version=VERSION,
         admin=is_admin(),
-        admin_enabled=admin_password != None
+        admin_enabled=admin_password is not None
     )
 
+class DelayedCmd(Enum):
+    QUIT = 0
+    SHUTDOWN = 1
+    REBOOT = 2
+    EXPAND_ROOTFS = 3
+    UPDATE_YTDL = 4
 
 # Delay system commands to allow redirect to render first
-def delayed_halt(cmd):
+def delayed_cmd(cmd: DelayedCmd):
     time.sleep(1.5)
     k.queue_clear()  
     cherrypy.engine.stop()
     cherrypy.engine.exit()
     k.stop()
-    if cmd == 0:
+    if cmd == DelayedCmd.QUIT:
         sys.exit()
-    if cmd == 1:
+    if cmd == DelayedCmd.SHUTDOWN:
         os.system("shutdown now")
-    if cmd == 2:
+    if cmd == DelayedCmd.REBOOT:
         os.system("reboot")
-    if cmd == 3:
+    if cmd == DelayedCmd.EXPAND_ROOTFS:
         process = subprocess.Popen(["raspi-config", "--expand-rootfs"])
         process.wait()
         os.system("reboot")
-
-def update_youtube_dl():
-    time.sleep(3)
-    k.upgrade_youtubedl()
+    if cmd == DelayedCmd.UPDATE_YTDL:
+        k.upgrade_youtubedl()
 
 @app.route("/update_ytdl")
+@admin_only
 def update_ytdl():
-    if (is_admin()):
-        flash(
-            "Updating youtube-dl! Should take a minute or two... ",
-            "is-warning",
-        )
-        th = threading.Thread(target=update_youtube_dl)
-        th.start()
-    else:
-        flash("You don't have permission to update youtube-dl", "is-danger")
+    flash("Updating youtube-dl! Should take a minute or two...", "is-warning")
+    th = threading.Thread(target=delayed_cmd, args=[DelayedCmd.UPDATE_YTDL])
+    th.start()
     return redirect(url_for("home"))
 
 @app.route("/refresh")
+@admin_only
 def refresh():
-    if (is_admin()):
-        k.get_available_songs()
-    else:
-        flash("You don't have permission to shut down", "is-danger")
+    k.get_available_songs()
     return redirect(url_for("browse"))
 
 @app.route("/quit")
+@admin_only
 def quit():
-    if (is_admin()):
-        flash("Quitting Furroke now!", "is-warning")
-        th = threading.Thread(target=delayed_halt, args=[0])
-        th.start()
-    else:
-        flash("You don't have permission to quit", "is-danger")
+    flash("Quitting Furroke now!", "is-warning")
+    th = threading.Thread(target=delayed_cmd, args=[DelayedCmd.QUIT])
+    th.start()
     return redirect(url_for("home"))
-
 
 @app.route("/shutdown")
+@admin_only
 def shutdown():
-    if (is_admin()): 
-        flash("Shutting down system now!", "is-danger")
-        th = threading.Thread(target=delayed_halt, args=[1])
-        th.start()
-    else:
-        flash("You don't have permission to shut down", "is-danger")
+    flash("Shutting down system now!", "is-danger")
+    th = threading.Thread(target=delayed_cmd, args=[DelayedCmd.SHUTDOWN])
+    th.start()
     return redirect(url_for("home"))
 
-
 @app.route("/reboot")
+@admin_only
 def reboot():
-    if (is_admin()): 
-        flash("Rebooting system now!", "is-danger")
-        th = threading.Thread(target=delayed_halt, args=[2])
-        th.start()
-    else:
-        flash("You don't have permission to Reboot", "is-danger")
+    flash("Rebooting system now!", "is-danger")
+    th = threading.Thread(target=delayed_cmd, args=[DelayedCmd.REBOOT])
+    th.start()
     return redirect(url_for("home"))
 
 @app.route("/expand_fs")
+@admin_only
 def expand_fs():
-    if (is_admin() and is_raspberry_pi): 
+    if is_raspberry_pi: 
         flash("Expanding filesystem and rebooting system now!", "is-danger")
-        th = threading.Thread(target=delayed_halt, args=[3])
+        th = threading.Thread(target=delayed_cmd, args=[DelayedCmd.EXPAND_ROOTFS])
         th.start()
-    elif (platform != "raspberry_pi"):
-        flash("Cannot expand fs on non-raspberry pi devices!", "is-danger")
     else:
-        flash("You don't have permission to resize the filesystem", "is-danger")
+        flash("Cannot expand fs on non-raspberry pi devices!", "is-danger")
     return redirect(url_for("home"))
-
 
 # Handle sigterm, apparently cherrypy won't shut down without explicit handling
 signal.signal(signal.SIGTERM, lambda signum, stack_frame: k.stop())
@@ -630,6 +616,7 @@ if __name__ == "__main__":
     default_screensaver_delay = 120
     default_log_level = logging.INFO
     default_prefer_hostname = False
+    default_certificates_folder = "./certificates"
 
     default_dl_dir = get_default_dl_dir(platform)
     default_youtubedl_path = get_default_youtube_dl_path(platform)
@@ -640,7 +627,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-p",
         "--port",
-        help="Desired http port (default: %d)" % default_port,
+        help=f"Desired http port (default: {default_port})",
         default=default_port,
         required=False,
     )
@@ -661,7 +648,7 @@ if __name__ == "__main__":
         "-d",
         "--download-path",
         nargs='+',
-        help="Desired path for downloaded songs. (default: %s)" % default_dl_dir,
+        help=f"Desired path for downloaded songs. (default: {default_dl_dir})",
         default=default_dl_dir,
         required=False,
     )
@@ -669,37 +656,35 @@ if __name__ == "__main__":
         "-y",
         "--youtubedl-path",
         nargs='+',
-        help="Path of youtube-dl. (default: %s)" % default_youtubedl_path,
+        help=f"Path of youtube-dl. (default: {default_youtubedl_path})",
         default=default_youtubedl_path,
         required=False,
     )
     parser.add_argument(
         "-v",
         "--volume",
-        help="Set initial player volume. A value between 0 and 1. (default: %s)" % default_volume,
+        help=f"Set initial player volume. A value between 0 and 1. (default: {default_volume})",
         default=default_volume,
         required=False,
     )
     parser.add_argument(
         "-s",
         "--splash-delay",
-        help="Delay during splash screen between songs (in secs). (default: %s )"
-        % default_splash_delay,
+        help=f"Delay during splash screen between songs (in secs). (default: {default_splash_delay})",
         default=default_splash_delay,
         required=False,
     )
     parser.add_argument(
         "-t",
         "--screensaver-timeout",
-        help="Delay before the screensaver begins (in secs). (default: %s )"
-        % default_screensaver_delay,
+        help=f"Delay before the screensaver begins (in secs). (default: {default_screensaver_delay})",
         default=default_screensaver_delay,
         required=False,
     )
     parser.add_argument(
         "-l",
         "--log-level",
-        help=f"Logging level int value (DEBUG: 10, INFO: 20, WARNING: 30, ERROR: 40, CRITICAL: 50). (default: {default_log_level} )",
+        help=f"Logging level int value (DEBUG: 10, INFO: 20, WARNING: 30, ERROR: 40, CRITICAL: 50). (default: {default_log_level})",
         default=default_log_level,
         required=False,
     )
@@ -741,38 +726,62 @@ if __name__ == "__main__":
         help="Path to a custom logo image file for the splash screen. Recommended dimensions ~ 2048x1024px",
         default=None,
         required=False,
-    ),
+    )
     parser.add_argument(
         "-u",
         "--url",
         help="Override the displayed IP address with a supplied URL. This argument should include port, if necessary",
         default=None,
         required=False,
-    ),
+    )
     parser.add_argument(
         "-m",
         "--ffmpeg-url",
         help="Override the ffmpeg address with a supplied URL.",
         default=None,
         required=False,
-    ),
+    )
     parser.add_argument(
         "--hide-overlay",
         action="store_true",
         help="Hide overlay that shows on top of video with Furroke QR code and IP",
         required=False,
-    ),
+    )
     parser.add_argument(
         "--admin-password",
         help="Administrator password, for locking down certain features of the web UI such as queue editing, player controls, song editing, and system shutdown. If unspecified, everyone is an admin.",
         default=None,
         required=True,
-    ),
+    )
+    parser.add_argument(
+        "--proxy-addr",
+        help="Address of a reverse proxy (such as 127.0.0.1). If set, Flask will only listen for requests on the provided address",
+        default=None,
+    )
+    parser.add_argument(
+        "--enable-ssl",
+        help="Use Cherrypy's built-in SSL handling. Disabled by default.",
+        action="store_true",
+        required=False,
+    )
+    parser.add_argument(
+        "--ssl-cert",
+        help=f"Path to SSL certificate (PEM format) for use with --enable-ssl (defaults to {default_certificates_folder}/fullchain.pem)",
+        default=f"{default_certificates_folder}/fullchain.pem",
+        required=False,
+    )
+    parser.add_argument(
+        "--ssl-key",
+        help=f"Path to SSL private key (PEM format) for use with --enable-ssl (defaults to {default_certificates_folder}/privkey.pem)",
+        default=f"{default_certificates_folder}/privkey.pem",
+        required=False,
+    )
 
     args = parser.parse_args()
 
-    if (args.admin_password):
-        admin_password = args.admin_password
+    print(args.enable_ssl)
+
+    admin_password = args.admin_password
 
     app.jinja_env.globals.update(filename_from_path=filename_from_path)
     app.jinja_env.globals.update(url_escape=quote)
@@ -827,10 +836,20 @@ if __name__ == "__main__":
             "engine.autoreload.on": False,
             "log.screen": True,
             "server.socket_port": int(args.port),
-            "server.socket_host": "0.0.0.0",
+            "server.socket_host": args.proxy_addr or "0.0.0.0",
             "server.thread_pool": 100
         }
     )
+    if args.enable_ssl:
+        cherrypy.config.update(
+            {
+                "server.ssl_module": "builtin",
+                "server.ssl_certificate": args.ssl_cert,
+                "server.ssl_private_key": args.ssl_key,
+            }
+        )
+    else:
+        logging.warning("The server is running as raw HTTP. Please use --enable-ssl or --proxy-addr (with an appropriate reverse proxy) for production environments for security reasons.")
     cherrypy.engine.start()
 
     # Start the splash screen using selenium
@@ -842,7 +861,7 @@ if __name__ == "__main__":
         options = Options()
 
         if args.window_size:
-            options.add_argument("--window-size=%s" % (args.window_size))
+            options.add_argument(f"--window-size={args.window_size}")
             options.add_argument("--window-position=0,0")
             
         options.add_argument("--kiosk")

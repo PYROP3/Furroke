@@ -1,0 +1,23 @@
+{$DOMAIN}:443 {
+  # Logging if necessary
+  # log {
+  #   level INFO
+  #   output file /data/furroke_access.log {
+  #     roll_size 10MB
+  #     roll_keep 10
+  #   }
+  # }
+
+  tls ./certificates/fullchain.pem ./certificates/privkey.pem
+
+  # Compatibility (uncomment if necessary)
+  # encode gzip
+
+  # Proxy everything to Furroke
+  reverse_proxy https://127.0.0.1:5555 {
+    transport http {
+      tls
+      tls_insecure_skip_verify
+    }
+  }
+}
