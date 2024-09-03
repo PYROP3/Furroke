@@ -465,6 +465,7 @@ def edit_file():
         return redirect(url_for("browse"))
 
 @app.route("/splash")
+@admin_only # Mitigates some issues related to multiple splashes running simultaneously
 def splash():
     return render_template(
         "splash.html",
@@ -476,7 +477,6 @@ def splash():
     )
 
 @app.route("/info")
-@admin_only # For security purposes only (prevent recon)
 def info():
     url=k.url
     cpu = f"{psutil.cpu_percent()}%"
@@ -586,25 +586,18 @@ signal.signal(signal.SIGTERM, lambda signum, stack_frame: k.stop())
 
 def get_default_youtube_dl_path(platform):
     if platform == "windows":
-        return os.path.join(os.path.dirname(__file__), ".venv\Scripts\yt-dlp.exe")
-    return os.path.join(os.path.dirname(__file__), ".venv/bin/yt-dlp")
+        return os.path.join(os.path.dirname(__file__), ".venv", "Scripts", "yt-dlp.exe")
+    return os.path.join(os.path.dirname(__file__), ".venv", "bin", "yt-dlp")
         
 
 def get_default_dl_dir(platform):
     if is_raspberry_pi:
         return "~/Furroke-songs"
-    elif platform == "windows":
-        legacy_directory = os.path.expanduser("~\Furroke\songs")
-        if os.path.exists(legacy_directory):
-            return legacy_directory
-        else:
-            return "~\Furroke-songs"
+    legacy_directory = os.path.expanduser(os.path.join("~", "Furroke", "songs"))
+    if os.path.exists(legacy_directory):
+        return legacy_directory
     else:
-        legacy_directory = "~/Furroke/songs"
-        if os.path.exists(legacy_directory):
-            return legacy_directory
-        else:
-            return "~/Furroke-songs"
+        return os.path.expanduser(os.path.join("~", "Furroke-songs"))
 
 
 if __name__ == "__main__":
