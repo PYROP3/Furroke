@@ -27,6 +27,7 @@ echo
 echo "*** CREATING PYTHON VIRTUAL ENVIRONMENT ***"
 python3 -m venv .venv
 source .venv/bin/activate
+if [ $? -ne 0 ]; then echo "ERROR: Python venv activation failed with error code: $?"; exit 1; fi
 
 echo
 echo "*** INSTALLING PYTHON DEPENDENCIES ***"

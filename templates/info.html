@@ -74,6 +74,8 @@
 
 <hr />
 
+{% if admin %}
+{# MSG: For security purposes, this section is only shown to admins (prevent recon) #}
 {# MSG: Header of the information section about the computer running Furroke. #}
 <h1>{% trans %}System Info{% endtrans %}</h1>
 <ul>
@@ -91,7 +93,6 @@
 
 <hr />
 
-{% if admin %}
 {# MSG: Title of the updates section. #}
 <h1>{% trans %}Updates{% endtrans %}</h1>
 {# MSG: Label before a link which forces Furroke to rescan and pick up any new songs. #}

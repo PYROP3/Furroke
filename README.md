@@ -174,3 +174,54 @@ options:
   --window-size WIDTH,HEIGHT
                         Explicitly set the width and height of the splash screen, where the WIDTH and HEIGHT values are specified in pixels.
 ```
+
+## Reverse proxy
+
+Due to security concerns, SSL/TLS support should be enabled for the underlying HTTP server.
+
+### Cherrypy
+
+Cherrypy allows supplying the required certificate and key, and can automatically serve HTTPS. This is provided with the arguments `--enable-ssl`, `--ssl-cert <path>` and `--ssl-key <path>`
+
+### Caddy
+
+Another good option is using [caddy](https://caddyserver.com/download) (with an appropriate Caddyfile such as the provided sample).
+
+Caddy may be run standalone using `./caddy start`, but it is a good idea to run it as a service so that it is executed automatically whenever the server reboots. An example service unit file is provided below. Remember to set WorkingDirectory and User to the appropriate values. 
+
+```
+[Unit]
+Description=Caddy service
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+WorkingDirectory=/root
+ExecStart=caddy start
+
+[Install]
+WantedBy=multi-user.target
+```
+
+## Certificates
+
+The certificates for the reverse proxy may also be obtained in several ways, but possibly the easiest is using [certbot](https://certbot.eff.org/). Both Caddy and Cherrypy are preconfigured to search for the files `./certificates/fullchain.pem` and `./certificates/privkey.pem`, so remember to add them to this folder.
+
+### certbot with Cloudflare
+
+If using Cloudflare for DNS, simply create a file (cloudflare_creds.ini) as below, and set the appropriate token for the domain. Remember to NEVER commit this file to any versioning system (hence why it is pre-added to .gitignore)
+
+```ini
+# Cloudflare API token used by Certbot
+dns_cloudflare_api_token = replace-with-token
+```
+
+Then certbot may be executed with the following command, setting the appropriate parameters for email (--email) and domain (-d).
+
+```sh
+certbot certonly --dns-cloudflare --dns-cloudflare-credentials cloudflare_creds.ini --non-interactive --agree-tos --email "email@provider.com" -d "domain.com"
+```
