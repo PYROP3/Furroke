@@ -13,6 +13,9 @@
       video.readyState > 2
     );
 
+  const isFirefox = typeof InstallTrigger !== "undefined";
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
   var mouseTimer = null,
     cursorVisible = true;
 
@@ -265,6 +268,21 @@
       }
     });
   });
+
+  document.addEventListener("DOMContentLoaded", (event) => {
+    let params = new URLSearchParams(window.location.search);
+    let dismissConfirmation = params.get("confirm");
+    if (isFirefox || isSafari) {
+      confirm(
+        "This browser is not supported. You may experience streaming issues. Please use Chrome for best results."
+      );
+    }
+    if (dismissConfirmation === "false") {
+      let modal = document.getElementById("permissions-modal");
+      modal.classList.remove("is-active");
+    }
+  });
+
 </script>
 {% endblock %} {% block body %}
 
