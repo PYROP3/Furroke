@@ -77,12 +77,12 @@ def is_admin():
 
 def admin_only(endpoint):
     @functools.wraps(endpoint)
-    def wrapper(msg=None):
+    def wrapper(*args, msg=None, **kwargs):
         if not is_admin(): 
             logging.debug(f"Blocking endpoint {endpoint.__name__} from {request.access_route[-1]}")
             flash(msg or "You don't have permission to access this endpoint", "is-danger")
             return redirect(url_for("home"))
-        return endpoint()
+        return endpoint(*args, **kwargs)
     return wrapper
 
 @babel.localeselector
