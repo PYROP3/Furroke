@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import random
+import re
 import socket
 import subprocess
 import time
@@ -19,6 +20,8 @@ from unidecode import unidecode
 from lib.file_resolver import FileResolver
 from lib.get_platform import get_platform
 
+YOUTUBE_LONG_URL_REGEX = re.compile(r"https://www\.youtube\.com/watch\?v=([a-zA-Z0-9]+)")
+YOUTUBE_SHORT_URL_REGEX = re.compile(r"https://youtu\.be/([a-zA-Z0-9]+)(?:\?si=.+)?")
 
 # Support function for reading  lines from ffmpeg stderr without blocking
 def enqueue_output(out, queue):
@@ -344,6 +347,10 @@ class Karaoke:
         return rc
 
     def find_song_by_youtube_id(self, youtube_id):
+        if not youtube_id:
+            logging.error("youtube_id is null")
+            return None
+
         for each in self.available_songs:
             if youtube_id in each:
                 return each
@@ -351,12 +358,13 @@ class Karaoke:
         return None
 
     def get_youtube_id_from_url(self, url):
-        s = url.split("watch?v=")
-        if len(s) == 2:
-            return s[1]
-        else:
-            logging.error("Error parsing youtube id from url: " + url)
-            return None
+        if m := YOUTUBE_LONG_URL_REGEX.search(url):
+            return m.group(1)
+        if m := YOUTUBE_SHORT_URL_REGEX.search(url):
+            return m.group(1)
+            
+        logging.error("Error parsing youtube id from url: " + url)
+        return None
 
     def play_file(self, file_path, semitones=0):
         logging.info(f"Playing file: {file_path} transposed {semitones} semitones")
